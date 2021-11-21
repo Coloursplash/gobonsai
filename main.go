@@ -50,7 +50,7 @@ func genTree(wh ...int) {
 
 	var widthSlice []int
 	for i := w; i > 0; i-- {
-		widthSlice = append(widthSlice, 1)
+		widthSlice = append(widthSlice, 1) // DEBUG should be 0 but temporarily 1 for debugging
 	}
 
 	var grid [][]int
