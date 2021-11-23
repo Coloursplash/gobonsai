@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"os/exec"
 	"time"
 
 	"golang.org/x/term"
@@ -38,19 +37,18 @@ func printHelp() {
 }
 
 func clear() {
-	cmd := exec.Command("cmd", "/c", "cls")
-	cmd.Stdout = os.Stdout
-	cmd.Run()
+	// clear ascii character
+	//fmt.Print("\033[H\033[2J")
 }
 
 func genTree(wh ...int) {
 	// generate grid
 	w := wh[0]
-	h := wh[1]
+	h := wh[1] - 3
 
 	var widthSlice []int
 	for i := w; i > 0; i-- {
-		widthSlice = append(widthSlice, 1) // DEBUG should be 0 but temporarily 1 for debugging
+		widthSlice = append(widthSlice, 0)
 	}
 
 	var grid [][]int
@@ -58,22 +56,19 @@ func genTree(wh ...int) {
 		grid = append(grid, widthSlice)
 	}
 
+	// create first piece of tree
+	grid[len(grid)][len(grid[0]) / 2] = 1
+
 	// loop infinitely
 	// int values:
 	// 0 empty
 	// 1 early wood
-	// 2 mid wood
-	// 3 late wood
-	// 4 dead wood
-	// 5 leaf
-	// 6 outer leaf
+	// 2 leaf
 	for {
 		clear()
 		if live {
 			showTree(grid)
-			fmt.Println("GOING TO SLEEP")
 			time.Sleep(time.Duration(timeVar * float64(time.Second)))
-			fmt.Println("SHOULD HAVE SLEPT")
 		}
 
 		treeDead := true
@@ -98,11 +93,11 @@ func showTree(grid [][]int) {
 			var num int
 			if grid[r][c] == 0 {
 				num = 0
-			} else if grid[r][c] < 7 {
+			} else if grid[r][c] == 1 {
 				min, max := 1, 6
 				num = rand.Intn(max-min) + min
 			} else {
-				min, max := 7, 10
+				min, max := 7, 101
 				num = rand.Intn(max-min) + min
 			}
 
@@ -111,14 +106,16 @@ func showTree(grid [][]int) {
 		// new line for new row
 		fmt.Print("\n")
 	}
+
+	fmt.Print(base)
 }
 
 func main() {
 	// map decleration because consts arent allowed for maps
 	var bases = map[int]string{
-		0: "",
+		0: "\n\n",
 		1: " \\                           / \n  \\_________________________/ \n  (_)                     (_)",
-		2: " (           ) \n  (_________)  ",
+		2: " (           ) \n  (_________)  \n",
 	}
 
 	// declare flag vars that should be global
@@ -129,7 +126,7 @@ func main() {
 	flag.Usage = printHelp
 
 	// set flags + default values
-	flag.Float64Var(&timeVar, "time", 0.03, "wait TIME secs between steps of growth (must be larger than 0) [default: 0.03]")
+	flag.Float64Var(&timeVar, "time", 0.03, "debuggingwait TIME secs between steps of growth (must be larger than 0) [default: 0.03]")
 	flag.Float64Var(&wait, "wait", 4.00, "in infinite mode, wait TIME between each tree generation [default: 4.00]")
 	flag.StringVar(&message, "message", "", "attach message next to the tree")
 	flag.IntVar(&baseInt, "base", 1, "ascii-art plant base to use (1 or 2), 0 is none")
